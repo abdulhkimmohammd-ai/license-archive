@@ -1,0 +1,185 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --primary: oklch(0.34 0.08 165);
+  --primary-foreground: oklch(0.98 0.01 90);
+  --sidebar-primary: oklch(0.77 0.13 88);
+  --sidebar-primary-foreground: oklch(0.24 0.045 165);
+  --chart-1: oklch(0.66 0.12 165);
+  --chart-2: oklch(0.75 0.13 88);
+  --chart-3: oklch(0.62 0.17 30);
+  --chart-4: oklch(0.57 0.08 252);
+  --chart-5: oklch(0.56 0.12 15);
+  --radius: 0.9rem;
+  --background: oklch(0.974 0.008 104);
+  --foreground: oklch(0.23 0.035 165);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.23 0.035 165);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.23 0.035 165);
+  --secondary: oklch(0.95 0.02 105);
+  --secondary-foreground: oklch(0.29 0.04 165);
+  --muted: oklch(0.95 0.012 105);
+  --muted-foreground: oklch(0.48 0.025 165);
+  --accent: oklch(0.95 0.04 90);
+  --accent-foreground: oklch(0.28 0.045 165);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.89 0.015 105);
+  --input: oklch(0.89 0.015 105);
+  --ring: oklch(0.48 0.11 165);
+  --sidebar: oklch(0.25 0.06 165);
+  --sidebar-foreground: oklch(0.96 0.015 105);
+  --sidebar-accent: oklch(0.32 0.07 165);
+  --sidebar-accent-foreground: oklch(0.98 0.01 90);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.77 0.13 88);
+}
+
+.dark {
+  --primary: var(--color-blue-700);
+  --primary-foreground: var(--color-blue-50);
+  --sidebar-primary: var(--color-blue-500);
+  --sidebar-primary-foreground: var(--color-blue-50);
+  --background: oklch(0.141 0.005 285.823);
+  --foreground: oklch(0.85 0.005 65);
+  --card: oklch(0.21 0.006 285.885);
+  --card-foreground: oklch(0.85 0.005 65);
+  --popover: oklch(0.21 0.006 285.885);
+  --popover-foreground: oklch(0.85 0.005 65);
+  --secondary: oklch(0.24 0.006 286.033);
+  --secondary-foreground: oklch(0.7 0.005 65);
+  --muted: oklch(0.274 0.006 286.033);
+  --muted-foreground: oklch(0.705 0.015 286.067);
+  --accent: oklch(0.274 0.006 286.033);
+  --accent-foreground:  oklch(0.92 0.005 65);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.488 0.243 264.376);
+  --chart-1: var(--color-blue-300);
+  --chart-2: var(--color-blue-500);
+  --chart-3: var(--color-blue-600);
+  --chart-4: var(--color-blue-700);
+  --chart-5: var(--color-blue-800);
+  --sidebar: oklch(0.21 0.006 285.885);
+  --sidebar-foreground: oklch(0.85 0.005 65);
+  --sidebar-accent: oklch(0.274 0.006 286.033);
+  --sidebar-accent-foreground:  oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.488 0.243 264.376);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Tajawal", sans-serif;
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [type="button"]:not(:disabled),
+  [type="submit"]:not(:disabled),
+  [type="reset"]:not(:disabled),
+  a[href],
+  select:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled) {
+    @apply cursor-pointer;
+  }
+}
+
+@layer components {
+  /**
+   * Custom container utility that centers content and adds responsive padding.
+   *
+   * This overrides Tailwind's default container behavior to:
+   * - Auto-center content (mx-auto)
+   * - Add responsive horizontal padding
+   * - Set max-width for large screens
+   *
+   * Usage: <div className="container">...</div>
+   *
+   * For custom widths, use max-w-* utilities directly:
+   * <div className="max-w-6xl mx-auto px-4">...</div>
+   */
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem; /* 16px - mobile padding */
+    padding-right: 1rem;
+  }
+
+  .flex {
+    min-height: 0;
+    min-width: 0;
+  }
+
+  @media (min-width: 640px) {
+    .container {
+      padding-left: 1.5rem; /* 24px - tablet padding */
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 2rem; /* 32px - desktop padding */
+      padding-right: 2rem;
+      max-width: 1280px; /* Standard content width */
+    }
+  }
+}
+
+.ministry-sheet { position: relative; box-sizing: border-box; width: 197mm; height: 250mm; margin: 16px auto; background: white; box-shadow: 0 8px 30px rgb(17 24 39 / 0.14); overflow: hidden; }
+.print-field { position: absolute; direction: rtl; white-space: nowrap; line-height: 1.15; font-family: "Noto Naskh Arabic", "Tahoma", serif; font-weight: 700; color: #111; font-size: 11.2pt; }
+.archive-print-text { position: absolute; right: 15mm; width: 167mm; direction: rtl; text-align: center; white-space: normal; line-height: 1.35; font: 700 12pt "Noto Naskh Arabic", "Tahoma", serif; color: #111; z-index: 1; }
+.template-reference { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; opacity: .9; }.print-field { z-index: 1; }
+.ministry-calibration { padding: 10mm; }.calibration-frame { position: relative; width: 177mm; height: 230mm; border: .5mm solid #111; }.calibration-title { margin-top: 28mm; text-align: center; font: 700 18pt "Noto Naskh Arabic", serif; }.calibration-subtitle { margin-top: 3mm; text-align: center; font: 11pt sans-serif; }.corner { position: absolute; width: 6mm; height: 6mm; border-color: #111; border-style: solid; }.top-left { top: -1mm; left: -1mm; border-width: .7mm 0 0 .7mm; }.top-right { top: -1mm; right: -1mm; border-width: .7mm .7mm 0 0; }.bottom-left { bottom: -1mm; left: -1mm; border-width: 0 0 .7mm .7mm; }.bottom-right { bottom: -1mm; right: -1mm; border-width: 0 .7mm .7mm 0; }.calibration-cross { position: absolute; top: 107mm; left: 82mm; font: 44pt sans-serif; }.calibration-note { position: absolute; inset: auto 12mm 12mm; text-align: center; font: 10pt "Noto Naskh Arabic", serif; }.calibration-ruler { position: absolute; font: 7pt sans-serif; }.calibration-ruler i { position: absolute; display: block; font-style: normal; border-left: .25mm solid #111; padding-left: 1mm; }.horizontal { top: 10mm; left: 0; width: 177mm; height: 7mm; }.horizontal i { height: 4mm; }.vertical { top: 0; right: 10mm; height: 230mm; width: 14mm; }.vertical i { width: 4mm; border-left: 0; border-top: .25mm solid #111; padding-top: 1mm; }
+@media print { @page { size: 197mm 250mm; margin: 0; } body { background: white !important; } .no-print { display: none !important; } .ministry-sheet { margin: 0; box-shadow: none; break-after: page; } }
