@@ -1,7 +1,10 @@
 name: Extract project ZIP
 
 on:
-  workflow_dispatch:
+  on:
+  push:
+    branches:
+      - preview:
 
 permissions:
   contents: write
