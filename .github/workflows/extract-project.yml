@@ -1,0 +1,27 @@
+name: Extract project ZIP
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout preview branch
+        uses: actions/checkout@v4
+
+      - name: Extract project ZIP
+        run: |
+          unzip -o "project-export-final (2).zip" -d .
+          rm -f "project-export-final (2).zip"
+
+      - name: Commit extracted project
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Extract project files from ZIP"
+          git push origin HEAD:${GITHUB_REF_NAME}
