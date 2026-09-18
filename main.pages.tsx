@@ -6,7 +6,9 @@ import SupabaseDevelopmentOfflineManager from "./components/SupabaseDevelopmentO
 import PwaStatusBar from "./components/PwaStatusBar";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import IndependentApp from "./IndependentApp";
+
 import "./index.css";
+
 import { registerPwaServiceWorker } from "./lib/pwa";
 
 const queryClient = new QueryClient({
@@ -25,7 +27,13 @@ const queryClient = new QueryClient({
 
 void registerPwaServiceWorker();
 
-createRoot(document.getElementById("root")!).render(
+const root = document.getElementById("root");
+
+if (!root) {
+  throw new Error("لم يتم العثور على عنصر التطبيق root");
+}
+
+createRoot(root).render(
   <ErrorBoundary>
     <ThemeProvider defaultTheme="light">
       <QueryClientProvider client={queryClient}>
