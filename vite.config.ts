@@ -15,14 +15,34 @@ import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
 // =============================================================================
 
 const PROJECT_ROOT = import.meta.dirname;
-const CLIENT_ROOT = path.resolve(PROJECT_ROOT, "client");
+
+const CLIENT_ROOT = path.resolve(
+  PROJECT_ROOT,
+  "client"
+);
+
+const CLIENT_SRC = path.resolve(
+  CLIENT_ROOT,
+  "src"
+);
+
+const CLIENT_PUBLIC = path.resolve(
+  CLIENT_ROOT,
+  "public"
+);
 
 const LOG_DIR = path.join(
   PROJECT_ROOT,
   ".manus-logs"
 );
 
-const MAX_LOG_SIZE_BYTES = 1 * 1024 * 1024;
+// =============================================================================
+// Manus log settings
+// =============================================================================
+
+const MAX_LOG_SIZE_BYTES =
+  1 * 1024 * 1024;
+
 const TRIM_TARGET_BYTES = Math.floor(
   MAX_LOG_SIZE_BYTES * 0.6
 );
@@ -33,7 +53,7 @@ type LogSource =
   | "sessionReplay";
 
 // =============================================================================
-// Manus Debug Collector
+// Manus Debug Collector - helpers
 // =============================================================================
 
 function ensureLogDir() {
@@ -57,7 +77,10 @@ function trimLogFile(
     }
 
     const lines = fs
-      .readFileSync(logPath, "utf-8")
+      .readFileSync(
+        logPath,
+        "utf-8"
+      )
       .split("\n");
 
     const keptLines: string[] = [];
@@ -68,10 +91,11 @@ function trimLogFile(
       i >= 0;
       i--
     ) {
-      const lineBytes = Buffer.byteLength(
-        `${lines[i]}\n`,
-        "utf-8"
-      );
+      const lineBytes =
+        Buffer.byteLength(
+          `${lines[i]}\n`,
+          "utf-8"
+        );
 
       if (
         keptBytes + lineBytes >
@@ -80,7 +104,10 @@ function trimLogFile(
         break;
       }
 
-      keptLines.unshift(lines[i]);
+      keptLines.unshift(
+        lines[i]
+      );
+
       keptBytes += lineBytes;
     }
 
@@ -109,11 +136,14 @@ function writeToLogFile(
     `${source}.log`
   );
 
-  const lines = entries.map((entry) => {
-    const ts = new Date().toISOString();
+  const lines = entries.map(
+    (entry) => {
+      const timestamp =
+        new Date().toISOString();
 
-    return `[${ts}] ${JSON.stringify(entry)}`;
-  });
+      return `[${timestamp}] ${JSON.stringify(entry)}`;
+    }
+  );
 
   fs.appendFileSync(
     logPath,
@@ -128,7 +158,7 @@ function writeToLogFile(
 }
 
 // =============================================================================
-// Manus debug collector plugin
+// Manus Debug Collector Plugin
 // =============================================================================
 
 function vitePluginManusDebugCollector(): Plugin {
@@ -136,8 +166,11 @@ function vitePluginManusDebugCollector(): Plugin {
     name: "manus-debug-collector",
 
     transformIndexHtml(html) {
+      // Do not inject the Manus debug collector
+      // into production builds.
       if (
-        process.env.NODE_ENV === "production"
+        process.env.NODE_ENV ===
+        "production"
       ) {
         return html;
       }
@@ -150,7 +183,8 @@ function vitePluginManusDebugCollector(): Plugin {
             tag: "script",
 
             attrs: {
-              src: "/__manus__/debug-collector.js",
+              src:
+                "/__manus__/debug-collector.js",
               defer: true,
             },
 
@@ -166,7 +200,9 @@ function vitePluginManusDebugCollector(): Plugin {
       server.middlewares.use(
         "/__manus__/logs",
         (req, res, next) => {
-          if (req.method !== "POST") {
+          if (
+            req.method !== "POST"
+          ) {
             return next();
           }
 
@@ -174,7 +210,9 @@ function vitePluginManusDebugCollector(): Plugin {
             payload: any
           ) => {
             if (
-              payload.consoleLogs?.length > 0
+              payload
+                ?.consoleLogs
+                ?.length > 0
             ) {
               writeToLogFile(
                 "browserConsole",
@@ -183,8 +221,9 @@ function vitePluginManusDebugCollector(): Plugin {
             }
 
             if (
-              payload.networkRequests?.length >
-              0
+              payload
+                ?.networkRequests
+                ?.length > 0
             ) {
               writeToLogFile(
                 "networkRequests",
@@ -193,7 +232,9 @@ function vitePluginManusDebugCollector(): Plugin {
             }
 
             if (
-              payload.sessionEvents?.length > 0
+              payload
+                ?.sessionEvents
+                ?.length > 0
             ) {
               writeToLogFile(
                 "sessionReplay",
@@ -201,10 +242,13 @@ function vitePluginManusDebugCollector(): Plugin {
               );
             }
 
-            res.writeHead(200, {
-              "Content-Type":
-                "application/json",
-            });
+            res.writeHead(
+              200,
+              {
+                "Content-Type":
+                  "application/json",
+              }
+            );
 
             res.end(
               JSON.stringify({
@@ -221,20 +265,28 @@ function vitePluginManusDebugCollector(): Plugin {
 
           if (
             reqBody &&
-            typeof reqBody === "object"
+            typeof reqBody ===
+              "object"
           ) {
             try {
-              handlePayload(reqBody);
-            } catch (e) {
-              res.writeHead(400, {
-                "Content-Type":
-                  "application/json",
-              });
+              handlePayload(
+                reqBody
+              );
+            } catch (error) {
+              res.writeHead(
+                400,
+                {
+                  "Content-Type":
+                    "application/json",
+                }
+              );
 
               res.end(
                 JSON.stringify({
                   success: false,
-                  error: String(e),
+                  error: String(
+                    error
+                  ),
                 })
               );
             }
@@ -244,30 +296,45 @@ function vitePluginManusDebugCollector(): Plugin {
 
           let body = "";
 
-          req.on("data", (chunk) => {
-            body += chunk.toString();
-          });
-
-          req.on("end", () => {
-            try {
-              const payload =
-                JSON.parse(body);
-
-              handlePayload(payload);
-            } catch (e) {
-              res.writeHead(400, {
-                "Content-Type":
-                  "application/json",
-              });
-
-              res.end(
-                JSON.stringify({
-                  success: false,
-                  error: String(e),
-                })
-              );
+          req.on(
+            "data",
+            (chunk) => {
+              body += chunk.toString();
             }
-          });
+          );
+
+          req.on(
+            "end",
+            () => {
+              try {
+                const payload =
+                  JSON.parse(
+                    body
+                  );
+
+                handlePayload(
+                  payload
+                );
+              } catch (error) {
+                res.writeHead(
+                  400,
+                  {
+                    "Content-Type":
+                      "application/json",
+                  }
+                );
+
+                res.end(
+                  JSON.stringify({
+                    success: false,
+                    error: String(
+                      error
+                    ),
+                  })
+                );
+              }
+            }
+          );
         }
       );
     },
@@ -281,7 +348,12 @@ function vitePluginManusDebugCollector(): Plugin {
 export default defineConfig(
   ({ mode }) => {
     const cloudflarePreview =
-      mode === "cloudflare-preview";
+      mode ===
+      "cloudflare-preview";
+
+    // =========================================================================
+    // Plugins
+    // =========================================================================
 
     const plugins = [
       react(),
@@ -295,6 +367,10 @@ export default defineConfig(
             vitePluginManusDebugCollector(),
           ]),
     ];
+
+    // =========================================================================
+    // Manual chunks
+    // =========================================================================
 
     const manualChunks: Record<
       string,
@@ -349,35 +425,42 @@ export default defineConfig(
           ],
         };
 
+    // =========================================================================
+    // Return configuration
+    // =========================================================================
+
     return {
-      // =========================================================================
+      // =======================================================================
       // GitHub Pages
-      // =========================================================================
+      // =======================================================================
 
       base: "/license-archive/",
 
-      // =========================================================================
-      // Project root
-      // =========================================================================
+      // =======================================================================
+      // IMPORTANT
+      //
+      // index.html is located at:
+      //
+      // client/index.html
+      //
+      // Therefore the Vite root must remain the repository root.
+      // =======================================================================
 
       root: PROJECT_ROOT,
 
-      // =========================================================================
+      // =======================================================================
       // Plugins
-      // =========================================================================
+      // =======================================================================
 
       plugins,
 
-      // =========================================================================
+      // =======================================================================
       // Resolve aliases
-      // =========================================================================
+      // =======================================================================
 
       resolve: {
         alias: {
-          "@": path.resolve(
-            CLIENT_ROOT,
-            "src"
-          ),
+          "@": CLIENT_SRC,
 
           "@shared": path.resolve(
             PROJECT_ROOT,
@@ -391,36 +474,41 @@ export default defineConfig(
         },
       },
 
-      // =========================================================================
+      // =======================================================================
       // Environment
-      // =========================================================================
+      // =======================================================================
 
       envDir: PROJECT_ROOT,
 
-      // =========================================================================
+      // =======================================================================
       // Public directory
-      // =========================================================================
+      //
+      // Your public files are inside:
+      // client/public
+      // =======================================================================
 
-      publicDir: path.resolve(
-        CLIENT_ROOT,
-        "public"
-      ),
+      publicDir: CLIENT_PUBLIC,
 
-      // =========================================================================
+      // =======================================================================
       // Build
-      // =========================================================================
+      // =======================================================================
 
       build: {
+        // GitHub Actions expects:
+        // dist/public
+
         outDir: path.resolve(
           PROJECT_ROOT,
-          "dist/public"
+          "dist",
+          "public"
         ),
 
         emptyOutDir: true,
 
         rollupOptions: {
           // IMPORTANT:
-          // index.html is inside client/
+          // The actual index.html is:
+          // client/index.html
           input: path.resolve(
             CLIENT_ROOT,
             "index.html"
@@ -432,9 +520,9 @@ export default defineConfig(
         },
       },
 
-      // =========================================================================
+      // =======================================================================
       // Development server
-      // =========================================================================
+      // =======================================================================
 
       server: {
         host: true,
@@ -451,7 +539,10 @@ export default defineConfig(
 
         fs: {
           strict: true,
-          deny: ["**/.*"],
+
+          deny: [
+            "**/.*",
+          ],
         },
       },
     };
