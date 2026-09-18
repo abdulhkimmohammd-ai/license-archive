@@ -40,8 +40,8 @@ jobs:
 
       - name: Build
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_DEVELOPMENT_URL: ${{ secrets.VITE_SUPABASE_DEVELOPMENT_URL }}
+          VITE_SUPABASE_DEVELOPMENT_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_DEVELOPMENT_PUBLISHABLE_KEY }}
         run: pnpm run build
 
       - name: Setup GitHub Pages
