@@ -1,5 +1,4 @@
 name: Extract project ZIP
-
 on:
   push:
     branches:
