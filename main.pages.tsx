@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRoot } from "react-dom/client";
+
 import ErrorBoundary from "./components/ErrorBoundary";
 import SupabaseDevelopmentOfflineManager from "./components/SupabaseDevelopmentOfflineManager";
 import PwaStatusBar from "./components/PwaStatusBar";
@@ -10,8 +11,15 @@ import { registerPwaServiceWorker } from "./lib/pwa";
 
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: { staleTime: 30_000, gcTime: 5 * 60_000, retry: 1, refetchOnWindowFocus: false },
-    mutations: { retry: 0 },
+    queries: {
+      staleTime: 30_000,
+      gcTime: 5 * 60_000,
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: 0,
+    },
   },
 });
 
