@@ -510,9 +510,9 @@ export default defineConfig(
           // The actual index.html is:
           // client/index.html
           input: path.resolve(
-            CLIENT_ROOT,
-            "index.html"
-          ),
+  PROJECT_ROOT,
+  "index.html"
+),
 
           output: {
             manualChunks,
