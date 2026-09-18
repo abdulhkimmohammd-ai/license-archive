@@ -1,6 +1,9 @@
 name: Extract project ZIP
 
-on: push
+on:
+  push:
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -10,18 +13,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout preview branch
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Extract project ZIP
         run: |
-          unzip -o "project-export-final (2).zip" -d .
-          rm -f "project-export-final (2).zip"
+          if [ -f "project-export-final (2).zip" ]; then
+            unzip -o "project-export-final (2).zip" -d .
+            rm -f "project-export-final (2).zip"
+          else
+            echo "ZIP file not found - nothing to extract."
+            exit 0
+          fi
 
       - name: Commit extracted project
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "Extract project files from ZIP" || echo "Nothing to commit"
-          git push origin HEAD:${GITHUB_REF_NAME}
+          git diff --cached --quiet || git commit -m "Extract project files [skip ci]"
+          git push
