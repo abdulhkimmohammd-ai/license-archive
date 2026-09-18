@@ -1,0 +1,1 @@
+CREATE INDEX `licenses_created_at_idx` ON `licenses` (`createdAt`);

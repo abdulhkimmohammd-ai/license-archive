@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `accessStatus` enum('pending','approved','blocked') DEFAULT 'pending' NOT NULL;

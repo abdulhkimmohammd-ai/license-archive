@@ -1,0 +1,10 @@
+name = "license-archive-migration-lab-api"
+main = "src/index.ts"
+compatibility_date = "2026-08-25"
+
+[vars]
+ALLOWED_ORIGIN = ""
+
+# Set SUPABASE_URL and SUPABASE_ANON_KEY with:
+# wrangler secret put SUPABASE_URL
+# wrangler secret put SUPABASE_ANON_KEY

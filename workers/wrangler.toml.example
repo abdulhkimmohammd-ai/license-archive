@@ -1,0 +1,12 @@
+# Template only. Do not run wrangler deploy without explicit approval.
+name = "license-archive-migration-lab-api"
+main = "src/index.ts"
+compatibility_date = "2026-08-25"
+
+[vars]
+# Set this only for a dedicated Preview origin; keep it empty until approved.
+ALLOWED_ORIGIN = ""
+
+# Set secrets outside source control using the deployment secret manager:
+# SUPABASE_URL
+# SUPABASE_ANON_KEY

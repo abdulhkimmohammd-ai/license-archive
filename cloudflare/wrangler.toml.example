@@ -1,0 +1,8 @@
+# Template only. Do not run deploy commands from this repository without explicit approval.
+name = "license-archive-migration-lab"
+compatibility_date = "2026-08-25"
+pages_build_output_dir = "dist/public"
+
+# Bindings and secrets are intentionally absent.
+# Add only after a separate review of Supabase public variables, server architecture,
+# authentication redirects, and the Production/DNS boundary.

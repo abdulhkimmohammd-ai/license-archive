@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `appLockPinHash` varchar(255);
