@@ -174,9 +174,10 @@ export default defineConfig(({ mode }) => {
     "ui-vendor": ["@radix-ui/react-dialog", "@radix-ui/react-select", "@radix-ui/react-tooltip", "lucide-react"],
     "charts-vendor": ["recharts"],
   };
-  return {
-  plugins,
-  resolve: {
+    return {
+    base: "/license-archive/",
+    plugins,
+    resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
       "@shared": path.resolve(import.meta.dirname, "shared"),
