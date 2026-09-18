@@ -3,7 +3,11 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import fs from "node:fs";
 import path from "node:path";
-import { defineConfig, type Plugin, type ViteDevServer } from "vite";
+import {
+  defineConfig,
+  type Plugin,
+  type ViteDevServer,
+} from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
 
 // =============================================================================
@@ -11,10 +15,17 @@ import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
 // =============================================================================
 
 const PROJECT_ROOT = import.meta.dirname;
-const LOG_DIR = path.join(PROJECT_ROOT, ".manus-logs");
+const CLIENT_ROOT = path.resolve(PROJECT_ROOT, "client");
+
+const LOG_DIR = path.join(
+  PROJECT_ROOT,
+  ".manus-logs"
+);
 
 const MAX_LOG_SIZE_BYTES = 1 * 1024 * 1024;
-const TRIM_TARGET_BYTES = Math.floor(MAX_LOG_SIZE_BYTES * 0.6);
+const TRIM_TARGET_BYTES = Math.floor(
+  MAX_LOG_SIZE_BYTES * 0.6
+);
 
 type LogSource =
   | "browserConsole"
@@ -27,11 +38,16 @@ type LogSource =
 
 function ensureLogDir() {
   if (!fs.existsSync(LOG_DIR)) {
-    fs.mkdirSync(LOG_DIR, { recursive: true });
+    fs.mkdirSync(LOG_DIR, {
+      recursive: true,
+    });
   }
 }
 
-function trimLogFile(logPath: string, maxSize: number) {
+function trimLogFile(
+  logPath: string,
+  maxSize: number
+) {
   try {
     if (
       !fs.existsSync(logPath) ||
@@ -40,17 +56,27 @@ function trimLogFile(logPath: string, maxSize: number) {
       return;
     }
 
-    const lines = fs.readFileSync(logPath, "utf-8").split("\n");
+    const lines = fs
+      .readFileSync(logPath, "utf-8")
+      .split("\n");
+
     const keptLines: string[] = [];
     let keptBytes = 0;
 
-    for (let i = lines.length - 1; i >= 0; i--) {
+    for (
+      let i = lines.length - 1;
+      i >= 0;
+      i--
+    ) {
       const lineBytes = Buffer.byteLength(
         `${lines[i]}\n`,
         "utf-8"
       );
 
-      if (keptBytes + lineBytes > TRIM_TARGET_BYTES) {
+      if (
+        keptBytes + lineBytes >
+        TRIM_TARGET_BYTES
+      ) {
         break;
       }
 
@@ -102,23 +128,6 @@ function writeToLogFile(
 }
 
 // =============================================================================
-// Legacy entry plugin
-// =============================================================================
-
-function vitePluginLegacyEntry(): Plugin {
-  return {
-    name: "legacy-entry",
-
-    transformIndexHtml(html) {
-      return html.replace(
-        "/src/main.pages.tsx",
-        "/client/src/main.pages.tsx"
-      );
-    },
-  };
-}
-
-// =============================================================================
 // Manus debug collector plugin
 // =============================================================================
 
@@ -127,7 +136,9 @@ function vitePluginManusDebugCollector(): Plugin {
     name: "manus-debug-collector",
 
     transformIndexHtml(html) {
-      if (process.env.NODE_ENV === "production") {
+      if (
+        process.env.NODE_ENV === "production"
+      ) {
         return html;
       }
 
@@ -149,7 +160,9 @@ function vitePluginManusDebugCollector(): Plugin {
       };
     },
 
-    configureServer(server: ViteDevServer) {
+    configureServer(
+      server: ViteDevServer
+    ) {
       server.middlewares.use(
         "/__manus__/logs",
         (req, res, next) => {
@@ -157,22 +170,31 @@ function vitePluginManusDebugCollector(): Plugin {
             return next();
           }
 
-          const handlePayload = (payload: any) => {
-            if (payload.consoleLogs?.length > 0) {
+          const handlePayload = (
+            payload: any
+          ) => {
+            if (
+              payload.consoleLogs?.length > 0
+            ) {
               writeToLogFile(
                 "browserConsole",
                 payload.consoleLogs
               );
             }
 
-            if (payload.networkRequests?.length > 0) {
+            if (
+              payload.networkRequests?.length >
+              0
+            ) {
               writeToLogFile(
                 "networkRequests",
                 payload.networkRequests
               );
             }
 
-            if (payload.sessionEvents?.length > 0) {
+            if (
+              payload.sessionEvents?.length > 0
+            ) {
               writeToLogFile(
                 "sessionReplay",
                 payload.sessionEvents
@@ -180,7 +202,8 @@ function vitePluginManusDebugCollector(): Plugin {
             }
 
             res.writeHead(200, {
-              "Content-Type": "application/json",
+              "Content-Type":
+                "application/json",
             });
 
             res.end(
@@ -227,7 +250,8 @@ function vitePluginManusDebugCollector(): Plugin {
 
           req.on("end", () => {
             try {
-              const payload = JSON.parse(body);
+              const payload =
+                JSON.parse(body);
 
               handlePayload(payload);
             } catch (e) {
@@ -254,150 +278,182 @@ function vitePluginManusDebugCollector(): Plugin {
 // Vite configuration
 // =============================================================================
 
-export default defineConfig(({ mode }) => {
-  const cloudflarePreview =
-    mode === "cloudflare-preview";
+export default defineConfig(
+  ({ mode }) => {
+    const cloudflarePreview =
+      mode === "cloudflare-preview";
 
-  const plugins = [
-    react(),
-    tailwindcss(),
-    jsxLocPlugin(),
+    const plugins = [
+      react(),
+      tailwindcss(),
+      jsxLocPlugin(),
 
-    ...(cloudflarePreview
-      ? []
-      : [
-          vitePluginLegacyEntry(),
-          vitePluginManusRuntime(),
-          vitePluginManusDebugCollector(),
-        ]),
-  ];
+      ...(cloudflarePreview
+        ? []
+        : [
+            vitePluginManusRuntime(),
+            vitePluginManusDebugCollector(),
+          ]),
+    ];
 
-  const manualChunks: Record<
-    string,
-    string[]
-  > = cloudflarePreview
-    ? {
-        "react-vendor": [
-          "react",
-          "react-dom",
-        ],
+    const manualChunks: Record<
+      string,
+      string[]
+    > = cloudflarePreview
+      ? {
+          "react-vendor": [
+            "react",
+            "react-dom",
+          ],
 
-        "query-vendor": [
-          "@tanstack/react-query",
-        ],
+          "query-vendor": [
+            "@tanstack/react-query",
+          ],
 
-        "supabase-vendor": [
-          "@supabase/supabase-js",
-        ],
+          "supabase-vendor": [
+            "@supabase/supabase-js",
+          ],
 
-        "ui-vendor": [
-          "@radix-ui/react-dialog",
-          "@radix-ui/react-select",
-          "@radix-ui/react-tooltip",
-          "lucide-react",
-        ],
+          "ui-vendor": [
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-select",
+            "@radix-ui/react-tooltip",
+            "lucide-react",
+          ],
 
-        "charts-vendor": [
-          "recharts",
-        ],
-      }
-    : {
-        "react-vendor": [
-          "react",
-          "react-dom",
-        ],
+          "charts-vendor": [
+            "recharts",
+          ],
+        }
+      : {
+          "react-vendor": [
+            "react",
+            "react-dom",
+          ],
 
-        "query-vendor": [
-          "@tanstack/react-query",
-          "@trpc/client",
-          "@trpc/react-query",
-        ],
+          "query-vendor": [
+            "@tanstack/react-query",
+            "@trpc/client",
+            "@trpc/react-query",
+          ],
 
-        "ui-vendor": [
-          "@radix-ui/react-dialog",
-          "@radix-ui/react-select",
-          "@radix-ui/react-tooltip",
-          "lucide-react",
-        ],
+          "ui-vendor": [
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-select",
+            "@radix-ui/react-tooltip",
+            "lucide-react",
+          ],
 
-        "charts-vendor": [
-          "recharts",
-        ],
-      };
+          "charts-vendor": [
+            "recharts",
+          ],
+        };
 
-  return {
-    // GitHub Pages
-    base: "/license-archive/",
+    return {
+      // =========================================================================
+      // GitHub Pages
+      // =========================================================================
 
-    // Repository root
-    root: PROJECT_ROOT,
+      base: "/license-archive/",
 
-    plugins,
+      // =========================================================================
+      // Project root
+      // =========================================================================
 
-    resolve: {
-      alias: {
-        "@": path.resolve(
-          PROJECT_ROOT,
-          "client",
-          "src"
-        ),
+      root: PROJECT_ROOT,
 
-        "@shared": path.resolve(
-          PROJECT_ROOT,
-          "shared"
-        ),
+      // =========================================================================
+      // Plugins
+      // =========================================================================
 
-        "@assets": path.resolve(
-          PROJECT_ROOT,
-          "attached_assets"
-        ),
-      },
-    },
+      plugins,
 
-    envDir: PROJECT_ROOT,
+      // =========================================================================
+      // Resolve aliases
+      // =========================================================================
 
-    publicDir: path.resolve(
-      PROJECT_ROOT,
-      "public"
-    ),
+      resolve: {
+        alias: {
+          "@": path.resolve(
+            CLIENT_ROOT,
+            "src"
+          ),
 
-    build: {
-      outDir: path.resolve(
-        PROJECT_ROOT,
-        "dist/public"
-      ),
+          "@shared": path.resolve(
+            PROJECT_ROOT,
+            "shared"
+          ),
 
-      emptyOutDir: true,
-
-      rollupOptions: {
-        input: path.resolve(
-          PROJECT_ROOT,
-          "index.html"
-        ),
-
-        output: {
-          manualChunks,
+          "@assets": path.resolve(
+            PROJECT_ROOT,
+            "attached_assets"
+          ),
         },
       },
-    },
 
-    server: {
-      host: true,
+      // =========================================================================
+      // Environment
+      // =========================================================================
 
-      allowedHosts: [
-        ".manuspre.computer",
-        ".manus.computer",
-        ".manus-asia.computer",
-        ".manuscomputer.ai",
-        ".manusvm.computer",
-        "localhost",
-        "127.0.0.1",
-      ],
+      envDir: PROJECT_ROOT,
 
-      fs: {
-        strict: true,
-        deny: ["**/.*"],
+      // =========================================================================
+      // Public directory
+      // =========================================================================
+
+      publicDir: path.resolve(
+        CLIENT_ROOT,
+        "public"
+      ),
+
+      // =========================================================================
+      // Build
+      // =========================================================================
+
+      build: {
+        outDir: path.resolve(
+          PROJECT_ROOT,
+          "dist/public"
+        ),
+
+        emptyOutDir: true,
+
+        rollupOptions: {
+          // IMPORTANT:
+          // index.html is inside client/
+          input: path.resolve(
+            CLIENT_ROOT,
+            "index.html"
+          ),
+
+          output: {
+            manualChunks,
+          },
+        },
       },
-    },
-  };
-});
+
+      // =========================================================================
+      // Development server
+      // =========================================================================
+
+      server: {
+        host: true,
+
+        allowedHosts: [
+          ".manuspre.computer",
+          ".manus.computer",
+          ".manus-asia.computer",
+          ".manuscomputer.ai",
+          ".manusvm.computer",
+          "localhost",
+          "127.0.0.1",
+        ],
+
+        fs: {
+          strict: true,
+          deny: ["**/.*"],
+        },
+      },
+    };
+  }
+);
