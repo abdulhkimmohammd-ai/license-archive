@@ -1,431 +1,156 @@
-import { jsxLocPlugin } from "@builder.io/vite-plugin-jsx-loc";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import fs from "node:fs";
 import path from "node:path";
-import { defineConfig, type Plugin, type ViteDevServer } from "vite";
-import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
+import { defineConfig } from "vite";
 
 const PROJECT_ROOT = import.meta.dirname;
 const CLIENT_ROOT = path.resolve(PROJECT_ROOT, "client");
 const CLIENT_SRC = path.resolve(CLIENT_ROOT, "src");
 const CLIENT_PUBLIC = path.resolve(CLIENT_ROOT, "public");
-const LOG_DIR = path.join(PROJECT_ROOT, ".manus-logs");
 
-const MAX_LOG_SIZE_BYTES = 1 * 1024 * 1024;
-const TRIM_TARGET_BYTES = Math.floor(MAX_LOG_SIZE_BYTES * 0.6);
+export default defineConfig(({ mode }) => {
+  const cloudflarePreview = mode === "cloudflare-preview";
 
-type LogSource =
-  | "browserConsole"
-  | "networkRequests"
-  | "sessionReplay";
+  const manualChunks: Record<string, string[]> = {
+    "react-vendor": [
+      "react",
+      "react-dom",
+    ],
 
-function ensureLogDir() {
-  if (!fs.existsSync(LOG_DIR)) {
-    fs.mkdirSync(LOG_DIR, {
-      recursive: true,
-    });
-  }
-}
+    "query-vendor": [
+      "@tanstack/react-query",
+      "@trpc/client",
+      "@trpc/react-query",
+    ],
 
-function trimLogFile(
-  logPath: string,
-  maxSize: number
-) {
-  try {
-    if (
-      !fs.existsSync(logPath) ||
-      fs.statSync(logPath).size <= maxSize
-    ) {
-      return;
-    }
+    "supabase-vendor": [
+      "@supabase/supabase-js",
+    ],
 
-    const lines = fs
-      .readFileSync(logPath, "utf-8")
-      .split("\n");
+    "ui-vendor": [
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-select",
+      "@radix-ui/react-tooltip",
+      "lucide-react",
+    ],
 
-    const keptLines: string[] = [];
-    let keptBytes = 0;
-
-    for (
-      let i = lines.length - 1;
-      i >= 0;
-      i--
-    ) {
-      const lineBytes =
-        Buffer.byteLength(
-          `${lines[i]}\n`,
-          "utf-8"
-        );
-
-      if (
-        keptBytes + lineBytes >
-        TRIM_TARGET_BYTES
-      ) {
-        break;
-      }
-
-      keptLines.unshift(lines[i]);
-      keptBytes += lineBytes;
-    }
-
-    fs.writeFileSync(
-      logPath,
-      keptLines.join("\n"),
-      "utf-8"
-    );
-  } catch {
-    // Ignore trim errors.
-  }
-}
-
-function writeToLogFile(
-  source: LogSource,
-  entries: unknown[]
-) {
-  if (entries.length === 0) {
-    return;
-  }
-
-  ensureLogDir();
-
-  const logPath = path.join(
-    LOG_DIR,
-    `${source}.log`
-  );
-
-  const lines = entries.map(
-    (entry) =>
-      `[${new Date().toISOString()}] ${JSON.stringify(entry)}`
-  );
-
-  fs.appendFileSync(
-    logPath,
-    `${lines.join("\n")}\n`,
-    "utf-8"
-  );
-
-  trimLogFile(
-    logPath,
-    MAX_LOG_SIZE_BYTES
-  );
-}
-
-function vitePluginManusDebugCollector(): Plugin {
-  return {
-    name: "manus-debug-collector",
-
-    transformIndexHtml(html) {
-      if (
-        process.env.NODE_ENV ===
-        "production"
-      ) {
-        return html;
-      }
-
-      return {
-        html,
-
-        tags: [
-          {
-            tag: "script",
-
-            attrs: {
-              src:
-                "/__manus__/debug-collector.js",
-              defer: true,
-            },
-
-            injectTo: "head",
-          },
-        ],
-      };
-    },
-
-    configureServer(
-      server: ViteDevServer
-    ) {
-      server.middlewares.use(
-        "/__manus__/logs",
-        (req, res, next) => {
-          if (
-            req.method !== "POST"
-          ) {
-            return next();
-          }
-
-          const handlePayload = (
-            payload: any
-          ) => {
-            if (
-              payload?.consoleLogs?.length >
-              0
-            ) {
-              writeToLogFile(
-                "browserConsole",
-                payload.consoleLogs
-              );
-            }
-
-            if (
-              payload?.networkRequests?.length >
-              0
-            ) {
-              writeToLogFile(
-                "networkRequests",
-                payload.networkRequests
-              );
-            }
-
-            if (
-              payload?.sessionEvents?.length >
-              0
-            ) {
-              writeToLogFile(
-                "sessionReplay",
-                payload.sessionEvents
-              );
-            }
-
-            res.writeHead(
-              200,
-              {
-                "Content-Type":
-                  "application/json",
-              }
-            );
-
-            res.end(
-              JSON.stringify({
-                success: true,
-              })
-            );
-          };
-
-          const reqBody = (
-            req as {
-              body?: unknown;
-            }
-          ).body;
-
-          if (
-            reqBody &&
-            typeof reqBody ===
-              "object"
-          ) {
-            try {
-              handlePayload(
-                reqBody
-              );
-            } catch (error) {
-              res.writeHead(
-                400,
-                {
-                  "Content-Type":
-                    "application/json",
-                }
-              );
-
-              res.end(
-                JSON.stringify({
-                  success: false,
-                  error: String(
-                    error
-                  ),
-                })
-              );
-            }
-
-            return;
-          }
-
-          let body = "";
-
-          req.on(
-            "data",
-            (chunk) => {
-              body += chunk.toString();
-            }
-          );
-
-          req.on(
-            "end",
-            () => {
-              try {
-                handlePayload(
-                  JSON.parse(body)
-                );
-              } catch (error) {
-                res.writeHead(
-                  400,
-                  {
-                    "Content-Type":
-                      "application/json",
-                  }
-                );
-
-                res.end(
-                  JSON.stringify({
-                    success: false,
-                    error: String(
-                      error
-                    ),
-                  })
-                );
-              }
-            }
-          );
-        }
-      );
-    },
+    "charts-vendor": [
+      "recharts",
+    ],
   };
-}
 
-export default defineConfig(
-  ({ mode }) => {
-    const cloudflarePreview =
-      mode ===
-      "cloudflare-preview";
+  return {
+    /*
+     * المسار الأساسي للتطبيق
+     */
+    base: "/license-archive/",
 
-    const plugins = [
+    /*
+     * جذر مشروع Vite
+     * index.html موجود في جذر المشروع
+     */
+    root: PROJECT_ROOT,
+
+    /*
+     * إضافات Vite
+     */
+    plugins: [
       react(),
       tailwindcss(),
-      jsxLocPlugin(),
+    ],
 
-      ...(cloudflarePreview
-        ? []
-        : [
-            vitePluginManusRuntime(),
-            vitePluginManusDebugCollector(),
-          ]),
-    ];
+    /*
+     * مسارات الاستيراد المختصرة
+     */
+    resolve: {
+      alias: {
+        "@": CLIENT_SRC,
 
-    const manualChunks: Record<
-      string,
-      string[]
-    > = cloudflarePreview
-      ? {
-          "react-vendor": [
-            "react",
-            "react-dom",
-          ],
-
-          "query-vendor": [
-            "@tanstack/react-query",
-          ],
-
-          "supabase-vendor": [
-            "@supabase/supabase-js",
-          ],
-
-          "ui-vendor": [
-            "@radix-ui/react-dialog",
-            "@radix-ui/react-select",
-            "@radix-ui/react-tooltip",
-            "lucide-react",
-          ],
-
-          "charts-vendor": [
-            "recharts",
-          ],
-        }
-      : {
-          "react-vendor": [
-            "react",
-            "react-dom",
-          ],
-
-          "query-vendor": [
-            "@tanstack/react-query",
-            "@trpc/client",
-            "@trpc/react-query",
-          ],
-
-          "ui-vendor": [
-            "@radix-ui/react-dialog",
-            "@radix-ui/react-select",
-            "@radix-ui/react-tooltip",
-            "lucide-react",
-          ],
-
-          "charts-vendor": [
-            "recharts",
-          ],
-        };
-
-    return {
-      base: "/license-archive/",
-
-      // index.html موجود الآن في جذر المشروع
-      // وليس داخل client
-      root: PROJECT_ROOT,
-
-      plugins,
-
-      resolve: {
-        alias: {
-          "@": CLIENT_SRC,
-
-          "@shared": path.resolve(
-            PROJECT_ROOT,
-            "shared"
-          ),
-
-          "@assets": path.resolve(
-            PROJECT_ROOT,
-            "attached_assets"
-          ),
-        },
-      },
-
-      envDir: PROJECT_ROOT,
-
-      // ملفات public ما زالت داخل client/public
-      publicDir: CLIENT_PUBLIC,
-
-      build: {
-        outDir: path.resolve(
+        "@shared": path.resolve(
           PROJECT_ROOT,
-          "dist",
-          "public"
+          "shared"
         ),
 
-        emptyOutDir: true,
+        "@assets": path.resolve(
+          PROJECT_ROOT,
+          "attached_assets"
+        ),
+      },
+    },
 
-        rollupOptions: {
-          // index.html موجود في جذر المشروع
-          input: path.resolve(
-            PROJECT_ROOT,
-            "index.html"
-          ),
+    /*
+     * مكان ملفات البيئة .env
+     */
+    envDir: PROJECT_ROOT,
 
-          output: {
-            manualChunks,
-          },
+    /*
+     * مجلد الملفات العامة
+     */
+    publicDir: CLIENT_PUBLIC,
+
+    /*
+     * إعدادات البناء
+     */
+    build: {
+      outDir: path.resolve(
+        PROJECT_ROOT,
+        "dist",
+        "public"
+      ),
+
+      emptyOutDir: true,
+
+      rollupOptions: {
+        input: path.resolve(
+          PROJECT_ROOT,
+          "index.html"
+        ),
+
+        output: {
+          manualChunks,
         },
       },
+    },
 
-      server: {
-        host: true,
+    /*
+     * إعدادات خادم التطوير
+     */
+    server: {
+      host: true,
 
-        allowedHosts: [
-          ".manuspre.computer",
-          ".manus.computer",
-          ".manus-asia.computer",
-          ".manuscomputer.ai",
-          ".manusvm.computer",
-          "localhost",
-          "127.0.0.1",
+      allowedHosts: [
+        ".manuspre.computer",
+        ".manus.computer",
+        ".manus-asia.computer",
+        ".manuscomputer.ai",
+        ".manusvm.computer",
+        "localhost",
+        "127.0.0.1",
+      ],
+
+      fs: {
+        strict: true,
+
+        deny: [
+          "**/.*",
         ],
-
-        fs: {
-          strict: true,
-
-          deny: [
-            "**/.*",
-          ],
-        },
       },
-    };
-  }
-);
+    },
+
+    /*
+     * تحسينات خاصة بمعاينة Cloudflare
+     */
+    ...(cloudflarePreview
+      ? {
+          optimizeDeps: {
+            include: [
+              "react",
+              "react-dom",
+              "@tanstack/react-query",
+              "@supabase/supabase-js",
+            ],
+          },
+        }
+      : {}),
+  };
+});
