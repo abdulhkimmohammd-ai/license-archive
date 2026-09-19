@@ -6,43 +6,11 @@
     "user"
   ],
   "dev_command": "pnpm run dev",
-  "env_vars": {
-    "DATABASE_URL": "mysql://VHqhzZKEyCLWG3m.4e9b31e5d9c1:1z22g1BEYWrDB8cVHAx0@gateway03.us-east-1.prod.aws.tidbcloud.com:4000/SYUWUvQYevubBj7znRgQFH?ssl={\"rejectUnauthorized\":true}"
-  },
   "experiments": [
     "no_db_push"
   ],
-  "git_remote": {
-    "repo_url": "https://7f0548f6b28a1758d9bf7be630d36cb4.artifacts.cloudflare.net/git/prod/SYUWUvQYevubBj7znRgQFH.git",
-    "expiration": "2026-08-26T13:48:47.838Z",
-    "token": "art_v2_x_7e2a558947498ead948ef68bb1bad0edcab3ad7b?expires=1787752127",
-    "backend": "GIT_BACKEND_ARTIFACTS"
-  },
   "name": "نسخة-من-أرشيف-التراخيص",
-  "path": "/home/ubuntu/نسخة-من-أرشيف-التراخيص",
   "port": 3000,
-  "secrets": {
-    "BUILT_IN_FORGE_API_KEY": "AX66UeqXEhUecNLq4rDjse",
-    "BUILT_IN_FORGE_API_URL": "https://forge.manus.ai",
-    "JWT_SECRET": "eyAMPW7oX4EKnERzxEav6V",
-    "OAUTH_SERVER_URL": "https://api.manus.im",
-    "OWNER_NAME": "عبد الحكيم محمد شيخ السيد",
-    "OWNER_OPEN_ID": "fximAJdXxnd7jacfJyVC5D",
-    "SUPABASE_DEVELOPMENT_KEY": "sb_secret_6f81XlIWXLYEGL4NgNcIqg_fDl2k7x8",
-    "SUPABASE_DEVELOPMENT_URL": "https://qduofealtaikxhhrjxly.supabase.co",
-    "SUPABASE_KEY": "sb_secret_UUc_3au2rwegLyPtiMiTUA_mlmbLT7m",
-    "SUPABASE_URL": "https://rbcmsmkgigudhcutwyzo.supabase.co/rest/v1/",
-    "VITE_ANALYTICS_ENDPOINT": "https://manus-analytics.com",
-    "VITE_ANALYTICS_WEBSITE_ID": "a662d578-7825-4e45-9fcf-2f5720072ce7",
-    "VITE_APP_ID": "SYUWUvQYevubBj7znRgQFH",
-    "VITE_APP_LOGO": "https://files.manuscdn.com/user_upload_by_module/web_dev_logo/310519663095305964/nTGMErxwpWVyIiUS.png",
-    "VITE_APP_TITLE": "نسخة من أرشيف التراخيص",
-    "VITE_FRONTEND_FORGE_API_KEY": "Crvm9UmDzmB6EUg3HCDasJ",
-    "VITE_FRONTEND_FORGE_API_URL": "https://forge.manus.ai",
-    "VITE_OAUTH_PORTAL_URL": "https://manus.im",
-    "VITE_SUPABASE_DEVELOPMENT_PUBLISHABLE_KEY": "sb_publishable_L3heRf-ZdNrDRJHS9opSqg__zJ2XiBf",
-    "VITE_SUPABASE_DEVELOPMENT_URL": "https://qduofealtaikxhhrjxly.supabase.co"
-  },
   "template_id": "web-db-user",
   "test_command": "pnpm test"
 }
