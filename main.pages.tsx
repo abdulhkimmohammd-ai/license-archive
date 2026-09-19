@@ -1,15 +1,13 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRoot } from "react-dom/client";
 
-import ErrorBoundary from "./components/ErrorBoundary";
-import SupabaseDevelopmentOfflineManager from "./components/SupabaseDevelopmentOfflineManager";
-import PwaStatusBar from "./components/PwaStatusBar";
-import { ThemeProvider } from "./contexts/ThemeContext";
-import IndependentApp from "./IndependentApp";
-
-import "./index.css";
-
-import { registerPwaServiceWorker } from "./lib/pwa";
+import ErrorBoundary from "./client/src/components/ErrorBoundary";
+import SupabaseDevelopmentOfflineManager from "./client/src/components/SupabaseDevelopmentOfflineManager";
+import PwaStatusBar from "./client/src/components/PwaStatusBar";
+import { ThemeProvider } from "./client/src/contexts/ThemeContext";
+import App from "./client/src/App";
+import "./client/src/index.css";
+import { registerPwaServiceWorker } from "./client/src/lib/pwa";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,19 +25,13 @@ const queryClient = new QueryClient({
 
 void registerPwaServiceWorker();
 
-const root = document.getElementById("root");
-
-if (!root) {
-  throw new Error("لم يتم العثور على عنصر التطبيق root");
-}
-
-createRoot(root).render(
+createRoot(document.getElementById("root")!).render(
   <ErrorBoundary>
     <ThemeProvider defaultTheme="light">
       <QueryClientProvider client={queryClient}>
         <PwaStatusBar />
         <SupabaseDevelopmentOfflineManager />
-        <IndependentApp />
+        <App />
       </QueryClientProvider>
     </ThemeProvider>
   </ErrorBoundary>,
